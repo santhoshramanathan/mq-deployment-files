@@ -1,0 +1,24 @@
+--- 
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata: 
+  name: mymq
+spec: 
+  output: 
+    to: 
+      kind: ImageStreamTag
+      name: "mymq:latest-amd64"
+  source: 
+    dockerfile: |-
+        FROM cp.icr.io/cp/ibm-mqadvanced-server-integration:9.2.0.0-r2-amd64
+        RUN printf "DEFINE QLOCAL(foo) REPLACE\n" > /etc/mqm/my.mqsc \
+          && printf "Channels:\n\tMQIBindType=FASTPATH\n" > /etc/mqm/my.ini
+        LABEL summary "My custom MQ image"
+  strategy: 
+    dockerStrategy: 
+      from: 
+        kind: DockerImage
+        name: "cp.icr.io/cp/ibm-mqadvanced-server-integration:9.2.0.0-r2-amd64"
+      pullSecret: 
+        name: ibm-entitlement-key
+    type: Docker
